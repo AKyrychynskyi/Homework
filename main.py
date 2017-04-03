@@ -41,8 +41,7 @@ def page(dir_name, dir_list, conn, addr) :
 		for directs in dir_list :
 			if os.path.isdir(dir_name+directs): 
 				path =  dir_name + directs
-				path = urllib.parse.unquote(path, encoding = "utf-8")
-				print (path)
+
 				answer += "<p><a href="+'"' + path + '">' + directs  + "</a></p>"
 			else:
 				answer += "<p>" + directs + "</p>"
@@ -54,20 +53,25 @@ def page(dir_name, dir_list, conn, addr) :
 
 while True: 
 	client_connection, client_address = listen_socket.accept() 
-	request = client_connection.recv(1024) 
-	res = re.findall('GET ([\w/]+) HTTP', str(request)) 
+	request = client_connection.recv(1024)
+	
+	res = re.findall('GET (.+?) HTTP', str(request)) 
 
 
 	http_response = b''
 	 
 	if len(res) != 0: 
 		res = res[0] 
-		res = urllib.parse.quote(res)
+		
+		res = urllib.parse.unquote(res)
 		print (res)
 
-		list_dir = os.listdir(path="C:{}".format(res))
-		
 		try:
+			if os.path.isdir(res):
+				list_dir = os.listdir(path="C:{}".format(res))
+			else:
+				list_dir = []
+
 			page(res, list_dir, client_connection, client_address)
 		except:
 			send_answer(client_connection, "500 Internal Server Error", data="Ошибка")
